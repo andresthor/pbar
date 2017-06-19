@@ -177,21 +177,3 @@ class timed_pbar(pbar):
             self.set_message('{:.1f}s'.format(factor * self.time))
             self.update(i, self.interval)
             time.sleep(self.time * 1.0 / self.interval)
-
-
-def test_pbar():
-    try:
-        tbar = timed_pbar(time=2, length=60)
-        tbar.start()
-
-        bar = pbar()
-        bar.set_message('Updating something...')
-        for i in range(1, 1001):
-            bar.update(i, 1000)
-            time.sleep(0.003)
-
-    except AssertionError as e:
-        print('Error: ' + str(e))
-
-if __name__ == '__main__':
-    test_pbar()
