@@ -144,6 +144,10 @@ class pbar(object):
     def set_length(self, length=40):
         '''Set the length of the bar'''
         self.length = length
+        if self.align == 0:
+            self.set_alignment('left')
+        else:
+            self.set_alignment('right')
 
     def set_color(self, color='default'):
         '''Set the color of the text. The base terminal colors are available.'''
@@ -177,3 +181,6 @@ class timed_pbar(pbar):
             self.set_message('{:.1f}s'.format(factor * self.time))
             self.update(i, self.interval)
             time.sleep(self.time * 1.0 / self.interval)
+
+    def set_time(self, time=10):
+        self.time = time
