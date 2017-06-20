@@ -19,18 +19,23 @@ import time
 from tcolor import base_colors as bc
 
 
-class pbar(object):
-    def __init__(self, length=40):
-        '''Create a pbar (progress bar) object, with default settings'''
-        self.length = length
+class appearance:
+    def __init__(self, length=0):
         self.fg     = '#'
         self.bg     = '-'
         self.left   = '['
         self.right  = ']'
-        self.align  = 0
-        self.color  = bc.CLR
-        self.msg    = ''
 
+        self.color  = bc.CLR
+        self.length = length
+
+
+class pbar(object):
+    def __init__(self, length=40):
+        '''Create a pbar (progress bar) object, with default settings'''
+        self.app   = appearance(length=length)
+        self.align = 0
+        self.msg   = ''
         self.set_alignment('right')
 
     def update(self, value, total=100):
@@ -44,16 +49,16 @@ class pbar(object):
                    .format(value, total))
         assert value <= total, warning
 
-        prog = int(round(self.length * value / float(total)))
+        prog = int(round(self.app.length * value / float(total)))
         perc = round(100.0 * value / float(total), 1)
-        bar  = self.fg * prog + self.bg * (self.length - prog)
+        bar  = self.app.fg * prog + self.app.bg * (self.app.length - prog)
 
         space = self._perc_space(perc)
 
         make_string = self._left_adj if self.align == 0 else self._right_adj
         out = make_string(bar, space, perc)
 
-        sys.stdout.write(self.color + out + bc.CLR)
+        sys.stdout.write(self.app.color + out + bc.CLR)
         if value == total:
             sys.stdout.write('\n')
         sys.stdout.flush()
@@ -70,24 +75,27 @@ class pbar(object):
 
     def _right_adj(self, bar, space, perc):
         '''Returns the progress bar string, right adjusted'''
-        return '{}{}{}{}{}{}{}{}\r'.format(self.msg,
-                                           (self.align - len(self.msg)) * ' ',
-                                           self.left, bar, self.right,
-                                           space, perc, '%')
+        return ('{}{}{}{}{}{}{}{}\r'
+                .format(self.msg,
+                        (self.align - len(self.msg)) * ' ',
+                        self.app.left, bar, self.app.right,
+                        space, perc, '%'))
 
     def _left_adj(self, bar, space, perc):
         '''Returns the progress bar string, left adjusted'''
-        return '{}{}{}{}{}{}{}{}\r'.format(self.left, bar, self.right,
-                                           space, perc, '%',
-                                           (self._calc_margin() - len(self.msg)) * ' ',
-                                           self.msg)
+        return ('{}{}{}{}{}{}{}{}\r'
+                .format(self.app.left, bar, self.app.right,
+                        space, perc, '%',
+                        (self._calc_margin() - len(self.msg)) * ' ',
+                        self.msg))
 
     def _calc_margin(self):
         '''Returns the number of columns available after writing out the pbar
            without any message'''
         cols = self._get_width()
         # 7 = space + percentage
-        return int(cols) - self.length - len(self.left) - len(self.right) - 7
+        return (int(cols) - self.app.length -
+                len(self.app.left) - len(self.app.right) - 7)
 
     def _get_width(self):
         '''Returns the total width of the terminal, in characters'''
@@ -111,19 +119,19 @@ class pbar(object):
 
     def set_fg(self, fg='#'):
         '''Set the foreground symbol for the bar. I.e. the completed part'''
-        self.fg = fg
+        self.app.fg = fg
 
     def set_bg(self, bg='-'):
         '''Set the background symbol for the bar. I.e. the not completed part'''
-        self.bg = bg
+        self.app.bg = bg
 
     def set_left(self, left='['):
         '''Set the symbol that closes the bar on the left'''
-        self.left = left
+        self.app.left = left
 
     def set_right(self, right=']'):
         '''Set the symbol that closes the bar on the right'''
-        self.right = right
+        self.app.right = right
 
     def set_appearance(self, fg=None, bg=None, left=None, right=None,
                        color=None, length=None):
@@ -143,7 +151,7 @@ class pbar(object):
 
     def set_length(self, length=40):
         '''Set the length of the bar'''
-        self.length = length
+        self.app.length = length
         if self.align == 0:
             self.set_alignment('left')
         else:
@@ -151,7 +159,7 @@ class pbar(object):
 
     def set_color(self, color='default'):
         '''Set the color of the text. The base terminal colors are available.'''
-        self.color = {
+        self.app.color = {
             'default':  bc.CLR,
             'red':      bc.RED,
             'blue':     bc.BLUE,
